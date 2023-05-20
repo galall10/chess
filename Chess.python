@@ -88,6 +88,28 @@ def minimax(board, depth, alpha, beta, max_player):
                 break
         return min_eval
 
+# Minimax algorithm without alpha-beta pruning
+def minimax_withoutAlphaBeta(board, depth, max_player):
+    if depth == 0 or board.is_game_over():
+        return evaluate_board(board)
+
+    if max_player:
+        max_eval = float('-inf')
+        for move in board.legal_moves:
+            board.push(move)
+            eval = minimax_withoutAlphaBeta(board, depth - 1, False)
+            board.pop()
+            max_eval = max(max_eval, eval)
+        return max_eval
+    else:
+        min_eval = float('inf')
+        for move in board.legal_moves:
+            board.push(move)
+            eval = minimax_withoutAlphaBeta(board, depth - 1, True)
+            board.pop()
+            min_eval = min(min_eval, eval)
+        return min_eval
+
 # AI agent function that chooses the best move using the minimax algorithm with alpha-beta pruning
 def ai_move(board, difficulty):
     if difficulty == "easy":
@@ -109,12 +131,33 @@ def ai_move(board, difficulty):
             best_move = move
     return best_move
 
-# Human vs AI game loop
+# AI agent function that chooses the best move using the minimax algorithm
+def ai_move_withoutAlphaBeta(board, difficulty):
+    if difficulty == "easy":
+        depth = 2
+    elif difficulty == "medium":
+        depth = 3
+    elif difficulty == "hard":
+        depth = 4
+    else:
+        depth = 3  # default to medium difficulty
+    best_score = float('-inf')
+    best_move = None
+    for move in board.legal_moves:
+        board.push(move)
+        eval = minimax_withoutAlphaBeta(board, depth - 1, False)
+        board.pop()
+        if eval > best_score:
+            best_score = eval
+            best_move = move
+    return best_move
+
+# Computer vs Agent game loop
 def play_game():
     board = chess.Board()
+    algorithm = input("1.Minimax with alpha-beta \n2.Minimax without alpha-beta \nSelect algorithm type: ")
     difficulty = input("Select difficulty level (easy/medium/hard): ")
-    engine = chess.engine.SimpleEngine.popen_uci("D:\\Work\\Third Year\\Second Term\\Artifical Intiligence\\stockfish_15.1_win_x64\\stockfish-windows-2022-x86-64.exe"")
-
+    engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\qwerty\\Desktop\\stockfish-windows-2022-x86-64.exe")
     while difficulty not in ["easy", "medium", "hard"]:
         difficulty = input("Invalid difficulty level. Select difficulty level (easy/medium/hard): ")
 
@@ -134,7 +177,10 @@ def play_game():
                 result = engine.play(board, chess.engine.Limit(time=1))
                 board.push(result.move)
             else:
-                move = ai_move(board, difficulty)
+                if algorithm == "1":
+                     move = ai_move(board, difficulty)
+                if algorithm == "2":
+                    move = ai_move_withoutAlphaBeta(board, difficulty)
                 board.push(move)
                 print("AI plays:", move.uci())
 
