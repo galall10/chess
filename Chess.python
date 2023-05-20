@@ -75,7 +75,7 @@ def ai_move(board, difficulty):
 # Human vs AI game loop
 def play_game():
     board = chess.Board()
-    engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\qwerty\\Desktop\\stockfish-windows-2022-x86-64.exe")
+    engine = chess.engine.SimpleEngine.popen_uci("Enter Your Stockfish Engine Path Here")
     difficulty = input("Select difficulty level (easy/medium/hard): ")
     while difficulty not in ["easy", "medium", "hard"]:
         difficulty = input("Invalid difficulty level. Select difficulty level (easy/medium/hard): ")
