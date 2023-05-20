@@ -4,4 +4,6 @@ ChessV2: Added stockfish engine to play against the AI (minimax alpha-beta). (do
 
 ChessV3: Added simple GUI for the game. (added a "pieces" folder in the project location containing .png images for the pieces)
 
+ChessV4: Added minimax algorithm (without alpha-beta pruning), and the ability to choose the type of the algorithm being used by the AI.
 
+ChessV5: Updated GUI to include a menu to select the algorithm type and the difficulty level of the game.
