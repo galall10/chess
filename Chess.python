@@ -1,6 +1,43 @@
+import pygame
 import chess
+import chess.svg
+import io
 import random
 import chess.engine
+
+# Constants for the GUI
+SCREEN_WIDTH = 640
+SCREEN_HEIGHT = 640
+BOARD_SIZE = min(SCREEN_WIDTH, SCREEN_HEIGHT)
+SQUARE_SIZE = BOARD_SIZE // 8
+FPS = 60
+
+# Initialize Pygame
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
+
+# Load the chess pieces images
+pieces_images = {}
+pieces_images['white'] = {}
+pieces_images['black'] = {}
+
+for piece_type in ['r', 'n', 'b', 'q', 'k', 'p']:
+    pieces_images['white'][piece_type] = pygame.image.load(f'pieces/white_{piece_type}.png')
+    pieces_images['black'][piece_type] = pygame.image.load(f'pieces/black_{piece_type}.png')
+
+# Function to draw the chessboard and pieces
+def draw_board(board):
+    for row in range(8):
+        for col in range(8):
+            square_color = (255, 206, 158) if (row + col) % 2 == 0 else (209, 139, 71)
+            pygame.draw.rect(screen, square_color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            piece = board.piece_at(8 * row + col)
+            if piece:
+                piece_color = 'white' if piece.color == chess.WHITE else 'black'
+                piece_image = pieces_images[piece_color][piece.symbol().lower()]
+                piece_rect = piece_image.get_rect(center=(col * SQUARE_SIZE + SQUARE_SIZE // 2, row * SQUARE_SIZE + SQUARE_SIZE // 2))
+                screen.blit(piece_image, piece_rect)
 
 # Heuristic evaluation function
 def evaluate_board(board):
@@ -75,20 +112,41 @@ def ai_move(board, difficulty):
 # Human vs AI game loop
 def play_game():
     board = chess.Board()
-    engine = chess.engine.SimpleEngine.popen_uci("Enter Your Stockfish Engine Path Here")
     difficulty = input("Select difficulty level (easy/medium/hard): ")
+    engine = chess.engine.SimpleEngine.popen_uci("D:\\Work\\Third Year\\Second Term\\Artifical Intiligence\\stockfish_15.1_win_x64\\stockfish-windows-2022-x86-64.exe"")
+
     while difficulty not in ["easy", "medium", "hard"]:
         difficulty = input("Invalid difficulty level. Select difficulty level (easy/medium/hard): ")
-    while not board.is_game_over():
+
+    # Game loop
+    game_over = False
+    while not game_over:
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True  # Exit the game loop when the close button is pressed
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                game_over = True  # Exit the game loop when the ESC key is pressed
+
+        # Update game state
+        if not board.is_game_over():
+            if board.turn == chess.WHITE:
+                result = engine.play(board, chess.engine.Limit(time=1))
+                board.push(result.move)
+            else:
+                move = ai_move(board, difficulty)
+                board.push(move)
+                print("AI plays:", move.uci())
+
+        # Draw the game board
         print(board)
-        if board.turn == chess.WHITE:
-            result = engine.play(board, chess.engine.Limit(time=1))
-            board.push(result.move)
-        else:
-            move = ai_move(board, difficulty)
-            board.push(move)
-            print("AI plays:", move.uci())
+        draw_board(board)
+        pygame.display.update()
+
+    # Game over
     print(board.result())
+    engine.quit()
+    pygame.quit()
 
 # Start the game
 play_game()
