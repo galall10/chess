@@ -1,159 +1,94 @@
 import chess
-
 import random
+import chess.engine
 
 # Heuristic evaluation function
-
 def evaluate_board(board):
-
     # Count the total number of pieces each player has
-
     w_pawns = len(board.pieces(chess.PAWN, chess.WHITE))
-
     b_pawns = len(board.pieces(chess.PAWN, chess.BLACK))
-
     w_knights = len(board.pieces(chess.KNIGHT, chess.WHITE))
-
     b_knights = len(board.pieces(chess.KNIGHT, chess.BLACK))
-
     w_bishops = len(board.pieces(chess.BISHOP, chess.WHITE))
-
     b_bishops = len(board.pieces(chess.BISHOP, chess.BLACK))
-
     w_rooks = len(board.pieces(chess.ROOK, chess.WHITE))
-
     b_rooks = len(board.pieces(chess.ROOK, chess.BLACK))
-
     w_queens = len(board.pieces(chess.QUEEN, chess.WHITE))
-
     b_queens = len(board.pieces(chess.QUEEN, chess.BLACK))
 
     # Calculate the material score for each player
-
     w_material = 1 * w_pawns + 3 * w_knights + 3 * w_bishops + 5 * w_rooks + 9 * w_queens
-
     b_material = 1 * b_pawns + 3 * b_knights + 3 * b_bishops + 5 * b_rooks + 9 * b_queens
 
     # Return the difference in material score as the heuristic evaluation
-
     return w_material - b_material
 
 # Minimax algorithm with alpha-beta pruning
-
 def minimax(board, depth, alpha, beta, max_player):
-
     if depth == 0 or board.is_game_over():
-
         return evaluate_board(board)
 
     if max_player:
-
         max_eval = float('-inf')
-
         for move in board.legal_moves:
-
             board.push(move)
-
             eval = minimax(board, depth - 1, alpha, beta, False)
-
             board.pop()
-
             max_eval = max(max_eval, eval)
-
             alpha = max(alpha, eval)
-
             if beta <= alpha:
-
                 break
-
         return max_eval
-
     else:
-
         min_eval = float('inf')
-
         for move in board.legal_moves:
-
             board.push(move)
-
             eval = minimax(board, depth - 1, alpha, beta, True)
-
             board.pop()
-
             min_eval = min(min_eval, eval)
-
             beta = min(beta, eval)
-
             if beta <= alpha:
-
                 break
-
         return min_eval
 
 # AI agent function that chooses the best move using the minimax algorithm with alpha-beta pruning
-
-def ai_move(board, depth):
-
+def ai_move(board, difficulty):
+    if difficulty == "easy":
+        depth = 2
+    elif difficulty == "medium":
+        depth = 3
+    elif difficulty == "hard":
+        depth = 4
+    else:
+        depth = 3  # default to medium difficulty
     best_score = float('-inf')
-
     best_move = None
-
     for move in board.legal_moves:
-
         board.push(move)
-
         eval = minimax(board, depth - 1, float('-inf'), float('inf'), False)
-
         board.pop()
-
         if eval > best_score:
-
             best_score = eval
-
             best_move = move
-
     return best_move
 
 # Human vs AI game loop
-
 def play_game():
-
     board = chess.Board()
-
+    engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\qwerty\\Desktop\\stockfish-windows-2022-x86-64.exe")
+    difficulty = input("Select difficulty level (easy/medium/hard): ")
+    while difficulty not in ["easy", "medium", "hard"]:
+        difficulty = input("Invalid difficulty level. Select difficulty level (easy/medium/hard): ")
     while not board.is_game_over():
-
         print(board)
-
         if board.turn == chess.WHITE:
-
-            move = input("Enter your move: ")
-
-            try:
-
-                move = chess.Move.from_uci(move)
-
-                if move in board.legal_moves:
-
-                    board.push(move)
-
-                else:
-
-                    print("Invalid move. Try again.")
-
-            except ValueError:
-
-                print("Invalid move. Try again.")
-
+            result = engine.play(board, chess.engine.Limit(time=1))
+            board.push(result.move)
         else:
-
-            move = ai_move(board, 3)
-
+            move = ai_move(board, difficulty)
             board.push(move)
-
             print("AI plays:", move.uci())
-
     print(board.result())
 
 # Start the game
-
 play_game()
