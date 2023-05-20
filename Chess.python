@@ -152,15 +152,82 @@ def ai_move_withoutAlphaBeta(board, difficulty):
             best_move = move
     return best_move
 
-# Computer vs Agent game loop
-def play_game():
-    board = chess.Board()
-    algorithm = input("1.Minimax with alpha-beta \n2.Minimax without alpha-beta \nSelect algorithm type: ")
-    difficulty = input("Select difficulty level (easy/medium/hard): ")
-    engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\qwerty\\Desktop\\stockfish-windows-2022-x86-64.exe")
-    while difficulty not in ["easy", "medium", "hard"]:
-        difficulty = input("Invalid difficulty level. Select difficulty level (easy/medium/hard): ")
 
+def draw_menu(difficulty, algorithm):
+    font = pygame.font.Font(None, 36)
+    text_difficulty = font.render("Select Difficulty:", True, (0, 0, 0))
+    text_algorithm = font.render("Select Algorithm:", True, (0, 0, 0))
+    screen.blit(text_difficulty, (SCREEN_WIDTH // 2 - 100, 200))
+    screen.blit(text_algorithm, (SCREEN_WIDTH // 2 - 100, 340))
+
+    font = pygame.font.Font(None, 24)
+    text_easy = font.render("Easy", True, (0, 0, 0))
+    text_medium = font.render("Medium", True, (0, 0, 0))
+    text_hard = font.render("Hard", True, (0, 0, 0))
+    screen.blit(text_easy, (SCREEN_WIDTH // 2 - 100, 240))
+    screen.blit(text_medium, (SCREEN_WIDTH // 2 - 100, 270))
+    screen.blit(text_hard, (SCREEN_WIDTH // 2 - 100, 300))
+
+    if difficulty == "easy":
+        pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH // 2 - 130, 240, 20, 20), 2)
+    elif difficulty == "medium":
+        pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH // 2 - 130, 270, 20, 20), 2)
+    elif difficulty == "hard":
+        pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH // 2 - 130, 300, 20, 20), 2)
+
+    text_minimax = font.render("Minimax with alpha-beta", True, (0, 0, 0))
+    text_minimax_no_ab = font.render("Minimax without alpha-beta", True, (0, 0, 0))
+    screen.blit(text_minimax, (SCREEN_WIDTH // 2 - 100, 380))
+    screen.blit(text_minimax_no_ab, (SCREEN_WIDTH // 2 - 100, 410))
+
+    if algorithm == "1":
+        pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH // 2 - 130, 380, 20, 20), 2)
+    elif algorithm == "2":
+        pygame.draw.rect(screen, (0, 255, 0), (SCREEN_WIDTH // 2 - 130, 410, 20, 20), 2)
+
+
+def play_game():
+    # Initialize variables for difficulty and algorithm selection
+    difficulty = None
+    algorithm = None
+    difficulty_selected = False
+    algorithm_selected = False
+
+    while not (difficulty_selected and algorithm_selected):
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Check if the mouse is clicked on the difficulty options
+                if SCREEN_WIDTH // 2 - 130 <= event.pos[0] <= SCREEN_WIDTH // 2 - 110:
+                    if 240 <= event.pos[1] <= 260:
+                        difficulty = "easy"
+                        difficulty_selected = True
+                    elif 270 <= event.pos[1] <= 290:
+                        difficulty = "medium"
+                        difficulty_selected = True
+                    elif 300 <= event.pos[1] <= 320:
+                        difficulty = "hard"
+                        difficulty_selected = True
+                # Check if the mouse is clicked on the algorithm options
+                if SCREEN_WIDTH // 2 - 130 <= event.pos[0] <= SCREEN_WIDTH // 2 - 110:
+                    if 370 <= event.pos[1] <= 390:
+                        algorithm = "1"
+                        algorithm_selected = True
+                    elif 400 <= event.pos[1] <= 420:
+                        algorithm = "2"
+                        algorithm_selected = True
+
+        # Draw the menu and update the display
+        screen.fill((255, 255, 255))
+        draw_menu(difficulty, algorithm)
+        pygame.display.update()
+
+    # Continue with the rest of the game
+    board = chess.Board()
+    engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\qwerty\\Desktop\\stockfish-windows-2022-x86-64.exe")
     # Game loop
     game_over = False
     while not game_over:
@@ -193,6 +260,8 @@ def play_game():
     print(board.result())
     engine.quit()
     pygame.quit()
+
+
 
 # Start the game
 play_game()
